@@ -49,6 +49,7 @@ export class Teamleader implements INodeType {
 					{ name: 'Tickets', value: 'ticket' },
 					{ name: 'Ticket Status', value: 'ticketStatus' },
 					{ name: 'Deals', value: 'deal' },
+					{ name: 'Webhooks', value: 'webhook' },
 				],
 				default: 'user',
 				noDataExpression: true,
@@ -195,6 +196,24 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Estimated probability', name: 'estimated_probability', type: 'number', displayOptions: { show: { operation: ['deals.create', 'deals.update'] } }, default: 0, required: false, description: 'The estimated probability of the deal. Empty values are ignored and cause no overwrite' },
 			{ displayName: 'Estimated closing_date', name: 'estimated_closing_date', type: 'string', displayOptions: { show: { operation: ['deals.create', 'deals.update'] } }, default: '', required: false, description: 'The estimated closing date of the deal | Format YYYY-MM-DD. Empty values are ignored and cause no overwrite' },
 
+			// Operations for Webhooks
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: [
+							'webhook'
+						],
+					},
+				},
+				options: [
+					{ name: 'List', value: 'webhooks.list', description: 'Get a list of all webhooks.' },
+				],
+				default: 'webhooks.list',
+				description: 'The operation to perform.',
+			},
 			// ID and Limit
 			{	displayName: 'ID',
 				name: 'id',
