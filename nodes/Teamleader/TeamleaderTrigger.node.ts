@@ -29,6 +29,14 @@ export class TeamleaderTrigger implements INodeType {
 				required: true,
 			},
 		],
+		webhooks: [
+			{
+				name: 'default',
+				httpMethod: 'POST',
+				responseMode: 'onReceived',
+				path: 'webhook',
+			},
+		],
 		properties: [
 			{
 				displayName: 'Event',
@@ -108,69 +116,117 @@ export class TeamleaderTrigger implements INodeType {
 		],
 	};
 
-	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const webhookUrl = this.getNodeWebhookUrl('default');
-		const event = this.getNodeParameter('event');
-		const baseURL = 'https://api.focus.teamleader.eu';
-		const method = 'POST' as IHttpRequestMethods;
-		const operation = '/webhooks.register';
-		const body: IDataObject = {
-			url: webhookUrl,
-			types: event,
-		};
+	webhookMethods = {
+		default: {
+			async checkExists(this: IHookFunctions): Promise<boolean> {
+				const webhookData = this.getWorkflowStaticData('node');
+				const webhookUrl = this.getNodeWebhookUrl('default');
 
-		const options: IRequestOptions = {
-			method,
-			baseURL,
-			url: operation,
-			json: true,
-			body: { ...body },
-		};
+				const baseURL = 'https://api.focus.teamleader.eu';
+				const method = 'POST' as IHttpRequestMethods;
+				const operation = '/webhooks.list';
 
-		let responseData = 0;
+				const options: IRequestOptions = {
+					method,
+					baseURL,
+					url: operation,
+					json: true,
+				};
 
-		try {
-			responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
-		} catch (error) {
-			throw new NodeApiError(this.getNode(), error);
-		}
+				let responseData;
 
-		// Check if the response data undefined that the webhook was registered (successful) without any errors so return
-		if (responseData === undefined) {
-			// Required data is missing so was successful
-			return {
-				workflowData: [this.helpers.returnJsonArray(event as IDataObject)],
-			};
-		} else{
-			return {
-				noWebhookResponse: true,
-			};
-		}
-	}
+				try {
+					responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
+				} catch (error) {
+					throw new NodeApiError(this.getNode(), error);
+				}
 
-	async webhookDelete(this: IHookFunctions): Promise<boolean> {
-		const baseURL = 'https://api.focus.teamleader.eu';
-		const method = 'POST' as IHttpRequestMethods;
-		const operation = '/webhooks.unregister';
-		const webhookData = this.getWorkflowStaticData('node');
-		const webhookUrl = this.getNodeWebhookUrl('default');
+				if (responseData === undefined) {
+					return false;
+				}
 
-		const options: IRequestOptions = {
-			method,
-			baseURL,
-			url: operation,
-			json: true,
-			body: {
-				url: webhookUrl,
-				types: webhookData.webhookEvents,
+				if (responseData.data === undefined) {
+					return false;
+				}
+
+				for (const webhook of responseData.data) {
+					if (webhook.url === webhookUrl) {
+						webhookData.webhookEvents = webhook.types;
+						return true;
+					}
+				}
+
+				return false;
 			},
-		};
+			async create(this: IHookFunctions): Promise<boolean> {
+				const webhookUrl = this.getNodeWebhookUrl('default');
+				const event = this.getNodeParameter('event');
+				const baseURL = 'https://api.focus.teamleader.eu';
+				const method = 'POST' as IHttpRequestMethods;
+				const operation = '/webhooks.register';
+				const body: IDataObject = {
+					url: webhookUrl,
+					types: event,
+				};
 
-		try {
-			await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
-			return true;
-		} catch (error) {
-			throw new NodeApiError(this.getNode(), error);
+				const options: IRequestOptions = {
+					method,
+					baseURL,
+					url: operation,
+					json: true,
+					body: { ...body },
+				};
+
+				let responseData = 0;
+
+				try {
+					responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
+				} catch (error) {
+					throw new NodeApiError(this.getNode(), error);
+				}
+
+				// Check if the response data undefined that the webhook was registered (successful) without any errors so return
+				if (responseData === undefined) {
+					// Required data is missing so was successful
+					return true;
+				} else {
+					return false;
+				}
+			},
+			async delete(this: IHookFunctions): Promise<boolean> {
+				const baseURL = 'https://api.focus.teamleader.eu';
+				const method = 'POST' as IHttpRequestMethods;
+				const operation = '/webhooks.unregister';
+				const webhookData = this.getWorkflowStaticData('node');
+				const webhookUrl = this.getNodeWebhookUrl('default');
+
+				const options: IRequestOptions = {
+					method,
+					baseURL,
+					url: operation,
+					json: true,
+					body: {
+						url: webhookUrl,
+						types: webhookData.webhookEvents,
+					},
+				};
+
+				try {
+					await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
+					return true;
+				} catch (error) {
+					throw new NodeApiError(this.getNode(), error);
+				}
+			}
 		}
+	};
+
+	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+		const bodyData = this.getBodyData();
+		return {
+			workflowData: [
+				this.helpers.returnJsonArray(bodyData),
+			],
+		};
 	}
 }
