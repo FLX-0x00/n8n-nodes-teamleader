@@ -13,12 +13,10 @@ export class TeamleaderOAuth2Api implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
-			displayName: 'Instructions',
+			displayName: 'To obtain the Client ID and Client Secret for this integration, log into your Teamleader account. Go to the Marketplace, create a new integration (it doesn’t have to be public), and copy the provided Client ID and Client Secret.',
 			name: 'instructions',
 			type: 'notice',
 			default: '',
-			description:
-				'To obtain the Client ID and Client Secret for this integration, log into your Teamleader account. Go to the Marketplace, create a new integration (it doesn’t have to be public), and copy the provided Client ID and Client Secret.',
 		},
 		{
 			displayName: 'Grant Type',
