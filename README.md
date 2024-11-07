@@ -1,46 +1,78 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# Teamleader n8n Node Integration
 
-# n8n-nodes-starter
+## Overview
+This project is an n8n custom node integration for Teamleader, a popular online CRM platform. The purpose of this integration is to provide a seamless way to connect your workflows in n8n with the various resources offered by Teamleader, including users, contacts, companies, deals, invoices, projects, and more.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](n8n.io). It includes the node linter and other dependencies.
+Currently, this project is **under active development**, meaning features are being continuously added and refined. Please note that there are still many aspects that are not yet complete or that may be subject to change.
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+## Features
+- OAuth2 authentication with Teamleader.
+- Support for CRUD operations across a variety of Teamleader resources, such as Users, Contacts, Companies, Deals, Tickets, and more.
+- Flexible parameter handling to allow customization for each resource operation.
 
-## Prerequisites
+## Supported Resources
+The following resources and their actions are currently supported:
+- **Users**: Create, update, get, and get all.
+- **Contacts**: Create, update, get, and get all.
+- **Companies**: Create, update, get, and get all.
+- **Deals**: Create, update, get, get all, and delete.
+- **Projects**: Create, update, get, get all, and delete.
+- **Tickets**: Create, update, get, get all, and delete.
+- **Invoices**: Create, update, get, get all, download and delete.
+- **Quotations**: Create, update, get, get all, and delete.
+- **Products**: Create, update, get, get all, and delete.
+- **Work Types**: Create, update, get, get all, and delete.
 
-You need the following installed on your development machine:
+The project aims to support the entirety of Teamleader's API, but **some advanced features like triggers or webhooks are not yet implemented**.
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 18. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  pnpm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+## Disclaimer
+**This project is still in development**, and many functionalities are expected to evolve over time. Please use it with caution in production environments as some features might not be fully stable.
 
-## Using this starter
+If you have ideas for improvements, feature requests, or encounter issues, please check out the GitHub Issues tab to see what's currently planned or in progress. Feel free to contribute by opening an issue or submitting a pull request.
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+## Getting Started
+To use this n8n node:
+1. Clone the repository and install dependencies.
+2. Build the project and link it to your local n8n instance.
+3. Configure the node by providing the necessary credentials (OAuth2 via Teamleader).
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `pnpm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `pnpm lint` to check for errors or `pnpm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+Detailed installation instructions are coming soon!
 
-## More information
+### Requirements
+- Node.js
+- n8n v1.66.0 or later
+- Teamleader API access
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+## Usage
+- **Authentication**: This node uses OAuth2 authentication to connect with Teamleader. You need to set up a new integration via Teamleader's Marketplace to obtain your Client ID and Client Secret.
+- **Resources and Operations**: You can add this node to your workflow and use any of the supported resources with the appropriate operations. Parameters are automatically adjusted based on the selected resource.
+
+## Development
+This project is open-source and contributions are highly appreciated. Please ensure that all changes are well-tested and consistent with the existing codebase.
+
+### Running Locally
+- Clone the repository.
+- Run `npm install` to install all required dependencies.
+- Use `npm run build` to build the project.
+- Start an n8n instance linked with this node.
+
+### Contribution Guidelines
+- Please follow the coding standards used throughout the project.
+- Open an issue before submitting large changes to discuss your approach.
+- Pull requests are reviewed and merged as time permits.
+
+## Roadmap
+- [ ] Add support for webhooks and triggers for real-time updates.
+- [ ] Improve error handling and logging throughout the node.
+- [ ] Integrate all ressources, actions and parameters from the API
+
+## Issues
+Please report any issues or bugs using the GitHub Issues page. Contributions to resolve these issues are highly welcome.
 
 ## License
+This project is licensed under the MIT License. You are free to use, modify, and distribute this code, provided the original author is credited.
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+---
+
+Thank you for using and contributing to the Teamleader n8n node integration!
+
