@@ -299,7 +299,7 @@ export class Teamleader implements INodeType {
 					json: true,
 					body: { ...data },
 				};
-
+				
 				responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
 
 				// if response code is 204, return message that no data was found but the request was successful

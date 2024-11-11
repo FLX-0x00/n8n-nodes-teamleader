@@ -134,7 +134,7 @@ export class TeamleaderTrigger implements INodeType {
 				};
 
 				let responseData;
-
+				
 				try {
 					responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
 				} catch (error) {
@@ -197,7 +197,7 @@ export class TeamleaderTrigger implements INodeType {
 				const baseURL = 'https://api.focus.teamleader.eu';
 				const method = 'POST' as IHttpRequestMethods;
 				const operation = '/webhooks.unregister';
-				const webhookData = this.getWorkflowStaticData('node');
+				const event = this.getNodeParameter('event');
 				const webhookUrl = this.getNodeWebhookUrl('default');
 
 				const options: IRequestOptions = {
@@ -207,7 +207,7 @@ export class TeamleaderTrigger implements INodeType {
 					json: true,
 					body: {
 						url: webhookUrl,
-						types: webhookData.webhookEvents,
+						types: event,
 					},
 				};
 
