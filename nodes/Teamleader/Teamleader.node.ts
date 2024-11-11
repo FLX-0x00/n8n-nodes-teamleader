@@ -282,7 +282,7 @@ export class Teamleader implements INodeType {
 				// remove any parameters that have a value of undefined or null or are empty strings
 				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, value]) => {
 					if (value !== undefined && value !== null && value !== '') {
-						acc[key] = value;
+						acc[key] = this.getNodeParameter(key, i) as IDataObject;
 					}
 					return acc;
 				}, {} as IDataObject);
@@ -299,7 +299,10 @@ export class Teamleader implements INodeType {
 					json: true,
 					body: { ...data },
 				};
-				
+
+				// logging the call
+				this.logger.debug("Calling Teamleader API with", options);
+
 				responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
 
 				// if response code is 204, return message that no data was found but the request was successful
