@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type {
 	IExecuteFunctions,
 	INodeExecutionData,
@@ -14,6 +15,7 @@ import { NodeApiError, NodeConnectionType } from 'n8n-workflow';
 export class Teamleader implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Teamleader',
+		documentationUrl: 'https://developer.teamleader.eu/',
 		name: 'teamleader',
 		icon: 'file:teamleader.svg',
 		group: ['transform'],

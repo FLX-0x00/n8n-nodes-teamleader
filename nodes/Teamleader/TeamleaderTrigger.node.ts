@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type {
 	IHookFunctions,
 	IWebhookFunctions,
@@ -13,6 +14,7 @@ import { NodeApiError, NodeConnectionType } from 'n8n-workflow';
 export class TeamleaderTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Teamleader Trigger',
+		documentationUrl: 'https://developer.teamleader.eu/',
 		name: 'teamleaderTrigger',
 		icon: 'file:teamleader.svg',
 		group: ['trigger'],
@@ -134,7 +136,7 @@ export class TeamleaderTrigger implements INodeType {
 				};
 
 				let responseData;
-				
+
 				try {
 					responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
 				} catch (error) {
