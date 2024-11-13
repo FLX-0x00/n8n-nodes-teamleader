@@ -8,22 +8,71 @@ Currently, this project is **under active development**, meaning features are be
 ## Features
 - OAuth2 authentication with Teamleader.
 - Support for CRUD operations across a variety of Teamleader resources, such as Users, Contacts, Companies, Deals, Tickets, and more.
+- All types of triggers (Webhooks) are supported.
 - Flexible parameter handling to allow customization for each resource operation.
 
-## Supported Resources
-The following resources and their actions are currently supported:
-- **Users**: Create, update, get, and get all.
-- **Contacts**: Create, update, get, and get all.
-- **Companies**: Create, update, get, and get all.
-- **Deals**: Create, update, get, get all, and delete.
-- **Projects**: Create, update, get, get all, and delete.
-- **Tickets**: Create, update, get, get all, and delete.
-- **Invoices**: Create, update, get, get all, download and delete.
-- **Quotations**: Create, update, get, get all, and delete.
-- **Products**: Create, update, get, get all, and delete.
-- **Work Types**: Create, update, get, get all, and delete.
+## Unsupported Resources
+The following functions from the Teamleader API were not yet implemented:
 
-The project aims to support the entirety of Teamleader's API, but **some advanced features like triggers or webhooks are not yet implemented**.
+1. **Quotations**:
+   - `quotations.list` - List quotations
+   - `quotations.info` - Get a specific quotation
+   - `quotations.delete` - Remove a quotation
+
+2. **Work Types**:
+   - `workTypes.list` - List all work types
+
+3. **Document Templates**:
+   - `documentTemplates.list` - List document templates
+
+4. **Currencies**:
+   - `currencies.exchangeRates` - Get exchange rates
+
+5. **Notes**:
+   - `notes.list` - List notes
+   - `notes.update` - Update a note
+
+6. **Email Tracking**:
+   - `emailTracking.create` - Create new email tracking
+   - `emailTracking.list` - List email tracking records
+
+7. **Closing Days**:
+   - `closingDays.list` - List account closing days
+   - `closingDays.add` - Add a closing day
+   - `closingDays.delete` - Remove a closing day
+
+8. **Day Off Types**:
+   - `dayOffTypes.list` - List day-off types
+
+9. **Activity Types**:
+   - `activityTypes.list` - List all activity types
+
+10. **Level Two Areas (for Addresses)**:
+    - `levelTwoAreas.list` - List address areas
+
+11. **Payment Terms**:
+    - `paymentTerms.list` - List available payment terms
+
+12. **Commercial Discounts**:
+    - `commercialDiscounts.list` - List discounts
+
+13. **Payment Methods**:
+    - `paymentMethods.list` - List payment methods
+
+14. **Projects**:
+    - `projects.create` - Creating projects
+    - `projects.update` - Creating projects
+    - 
+15. **Invoices**:
+    - `invoices.list` - List invoices
+    - `invoices.create` - Creating invoices
+    - `invoices.update` - Creating invoices
+
+16. **Deals**:
+    - `deals.create` - Creating deals
+
+### Why?
+The omitted functions from the `n8n` implementation generally require complex data structures and intricate handling of resource relationships. At this stage, the focus remains on simpler operations and trigger-based functionality. Further development may include these features as data structures and dependencies are refined.
 
 ## Disclaimer
 **This project is still in development**, and many functionalities are expected to evolve over time. Please use it with caution in production environments as some features might not be fully stable.
@@ -62,8 +111,8 @@ This project is open-source and contributions are highly appreciated. Please ens
 - Pull requests are reviewed and merged as time permits.
 
 ## Roadmap
-- [ ] Add support for webhooks and triggers for real-time updates.
-- [ ] Improve error handling and logging throughout the node.
+- [x] Add support for webhooks and triggers for real-time updates.
+- [x] Improve error handling and logging throughout the node.
 - [ ] Integrate all ressources, actions and parameters from the API
 
 ## Issues
