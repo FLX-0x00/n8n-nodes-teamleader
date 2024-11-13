@@ -50,6 +50,8 @@ export class Teamleader implements INodeType {
 					{ name: 'Ticket Status', value: 'ticketStatus' },
 					{ name: 'Deals', value: 'deal' },
 					{ name: 'Webhooks', value: 'webhook' },
+					{ name: 'Contacts', value: 'contact'},
+					{ name: 'Companies', value: 'company' },
 				],
 				default: 'user',
 				noDataExpression: true,
@@ -214,6 +216,78 @@ export class Teamleader implements INodeType {
 				default: 'webhooks.list',
 				description: 'The operation to perform.',
 			},
+			// Operations for Contacts
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: [
+							'contact'
+						],
+					},
+				},
+				options: [
+					{ name: 'List', value: 'contacts.list', description: 'Get a list of all contacts.' },
+					{ name: 'Info', value: 'contacts.info', description: 'Get details for a single contact.' },
+					{ name: 'Add', value: 'contacts.add', description: 'Add a new contact.' },
+					{ name: 'Update', value: 'contacts.update', description: 'Update a contact.' },
+					{ name: 'Delete', value: 'contacts.delete', description: 'Delete a contact.' },
+					{ name: 'Link to company', value: 'contacts.linkToCompany', description: 'Link a contact to a company.' },
+					{ name: 'Unlink from company', value: 'contacts.unlinkFromCompany', description: 'Unlink a contact from a company.' },
+					{ name: 'Update company link', value: 'contacts.updateCompanyLink', description: 'Update the link between a contact and a company.' }
+
+				],
+				default: 'contacts.list',
+				description: 'The operation to perform.',
+			},
+			{ displayName: 'First Name', name: 'first_name', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The first name of the contact.' },
+			{ displayName: 'Last Name', name: 'last_name', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: true, description: 'The last name of the contact.' },
+			{ displayName: 'Salutation', name: 'salutation', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The salutation of the contact.' },
+			{ displayName: 'Website', name: 'website', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The website of the contact.' },
+			{ displayName: 'Birthday', name: 'birthday', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The birthday of the contact. Format: YYYY-MM-DD' },
+			{ displayName: 'Language', name: 'language', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The language of the contact.' },
+			{ displayName: 'Remarks', name: 'remarks', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The remarks of the contact.' },
+			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: false, required: false, description: 'Whether the contact has given consent to receive marketing mails.' },
+			{ displayName: 'Company ID', name: 'company_id', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update', 'contacts.linkToCompany', 'contacts.unlinkFromCompany', 'contacts.updateCompanyLink'] } }, default: '', required: true, description: 'The ID of the company the contact is linked to.' },
+			{ displayName: 'Position', name: 'position', type: 'string', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: '', required: false, description: 'The position of the contact.' },
+			{ displayName: 'Decision Maker', name: 'decision_maker', type: 'boolean', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: false, required: false, description: 'Whether the contact is a decision maker.' },
+			// Operations for Companies
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: [
+							'company'
+						],
+					},
+				},
+				options: [
+					{ name: 'List', value: 'companies.list', description: 'Get a list of all companies.' },
+					{ name: 'Info', value: 'companies.info', description: 'Get details for a single company.' },
+					{ name: 'Add', value: 'companies.add', description: 'Add a new company.' },
+					{ name: 'Update', value: 'companies.update', description: 'Update a company.' },
+					{ name: 'Delete', value: 'companies.delete', description: 'Delete a company.' },
+				],
+				default: 'companies.list',
+				description: 'The operation to perform.',
+			},
+			{ displayName: 'Name', name: 'name', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: true, description: 'The name of the company.' },
+			{ displayName: 'VAT Number', name: 'vat_number', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The VAT number of the company.' },
+			{ displayName: 'Emails', name: 'emails', type: 'fixedCollection', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, typeOptions: { multipleValues: true }, default: {}, placeholder: 'Add Email', options: [ { name: 'email', displayName: 'Email', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { value: 'primary', name: 'Primary' }, { value: 'secondary', name: 'Secondary' } ], default: 'primary' }, { displayName: 'Email Address', name: 'email', type: 'string', default: '', required: true } ] } ] },
+			{ displayName: 'Addresses', name: 'addresses', type: 'fixedCollection', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, typeOptions: { multipleValues: true }, default: {}, placeholder: 'Add Address', options: [ { name: 'address', displayName: 'Address', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { value: 'invoicing', name: 'Invoicing' }, { value: 'shipping', name: 'Shipping' } ], default: 'invoicing' }, { displayName: 'Addressee', name: 'addressee', type: 'string', default: '' }, { displayName: 'Line 1', name: 'line_1', type: 'string', default: '', required: true }, { displayName: 'Postal Code', name: 'postal_code', type: 'string', default: '' }, { displayName: 'City', name: 'city', type: 'string', default: '' }, { displayName: 'Country', name: 'country', type: 'string', default: '' } ] } ] },
+			{ displayName: 'Telephones', name: 'telephones', type: 'fixedCollection', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, typeOptions: { multipleValues: true }, default: {}, placeholder: 'Add Telephone', options: [ { name: 'telephone', displayName: 'Telephone', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { value: 'phone', name: 'Phone' }, { value: 'mobile', name: 'Mobile' } ], default: 'phone' }, { displayName: 'Number', name: 'number', type: 'string', default: '', required: true } ] } ] },
+			{ displayName: 'Website', name: 'website', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The website of the company.' },
+			{ displayName: 'IBAN', name: 'iban', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The IBAN of the company.' },
+			{ displayName: 'BIC', name: 'bic', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The BIC of the company.' },
+			{ displayName: 'Language', name: 'language', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The language of the company.' },
+			{ displayName: 'Remarks', name: 'remarks', type: 'string', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: '', required: false, description: 'The remarks of the company.' },
+			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: false, required: false, description: 'Whether the company has given consent to receive marketing mails.' },
+			{ displayName: 'Preferred Currency', name: 'preferred_currency', type: 'options', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: 'EUR', required: false, description: 'The preferred currency of the company.', options: [ { name: 'BAM', value: 'BAM' }, { name: 'CAD', value: 'CAD' }, { name: 'CHF', value: 'CHF' }, { name: 'CLP', value: 'CLP' }, { name: 'CNY', value: 'CNY' }, { name: 'COP', value: 'COP' }, { name: 'CZK', value: 'CZK' }, { name: 'DKK', value: 'DKK' }, { name: 'EUR', value: 'EUR' }, { name: 'GBP', value: 'GBP' }, { name: 'INR', value: 'INR' }, { name: 'ISK', value: 'ISK' }, { name: 'JPY', value: 'JPY' }, { name: 'MAD', value: 'MAD' }, { name: 'MXN', value: 'MXN' }, { name: 'NOK', value: 'NOK' }, { name: 'PEN', value: 'PEN' }, { name: 'PLN', value: 'PLN' }, { name: 'RON', value: 'RON' }, { name: 'SEK', value: 'SEK' }, { name: 'TRY', value: 'TRY' }, { name: 'USD', value: 'USD' }, { name: 'ZAR', value: 'ZAR' } ], },
+					
 			// ID and Limit
 			{	displayName: 'ID',
 				name: 'id',
@@ -236,6 +310,12 @@ export class Teamleader implements INodeType {
 							'deals.win',
 							'deals.lose',
 							'deals.move',
+							'contacts.add',
+							'contacts.update',
+							'contacts.delete',
+							'contacts.linkToCompany',
+							'contacts.unlinkFromCompany',
+							'contacts.updateCompanyLink'
 						]
 					}
 				},
@@ -280,12 +360,32 @@ export class Teamleader implements INodeType {
 				const all_parameters = this.getNode().parameters as IDataObject || {};
 
 				// remove any parameters that have a value of undefined or null or are empty strings
+				// remove any parameters that have a value of undefined, null, empty strings, or empty arrays
+				// remove any parameters that have a value of undefined, null, empty strings, or empty arrays
 				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, value]) => {
-					if (value !== undefined && value !== null && value !== '') {
-						acc[key] = this.getNodeParameter(key, i) as IDataObject;
+					if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
+						let fieldValue = this.getNodeParameter(key, i) as IDataObject | IDataObject[];
+
+						// If the fieldValue is a string, assign directly
+						if (typeof fieldValue === 'string') {
+							acc[key] = fieldValue;
+						}
+						// If the fieldValue is an array, add the array as it is (if it is not empty)
+						else if (Array.isArray(fieldValue) && fieldValue.length > 0) {
+							acc[key] = fieldValue;
+						}
+						// If the fieldValue is an object, add it directly without converting it
+						else if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
+							acc[key] = fieldValue;
+						}
+						// For boolean values, assign them directly
+						else if (typeof fieldValue === 'boolean') {
+							acc[key] = fieldValue;
+						}
 					}
 					return acc;
 				}, {} as IDataObject);
+
 
 				const qs: IDataObject = { page: { size: limit } };
 
