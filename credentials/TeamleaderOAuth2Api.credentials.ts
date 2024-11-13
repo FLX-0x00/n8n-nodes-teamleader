@@ -7,7 +7,7 @@ export class TeamleaderOAuth2Api implements ICredentialType {
 
 	displayName = 'Teamleader OAuth2 API';
 
-	documentationUrl = 'teamleader';
+	documentationUrl: 'https://developer.teamleader.eu/';
 
     icon: Icon = 'file:teamleader.svg';
 
