@@ -1,15 +1,23 @@
 {
   "name": "n8n-nodes-teamleader",
   "version": "1.1.0",
-  "description": "",
+  "description": "n8n community node for Teamleader CRM",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n-nodes",
+    "n8n",
+    "teamleader",
+    "crm",
+    "n8n-nodes",
+    "n8n",
+    "n8n.io",
+    "n8n.io-nodes"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://www.npmjs.com/package/n8n-nodes-teamleader",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Paul Werther",
+    "email": "flx@evait.de"
   },
   "repository": {
     "type": "git",
@@ -36,12 +44,11 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/credentials/TeamleaderOAuth2Api.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/Teamleader/TeamleaderTrigger.node.js",
+      "dist/nodes/Teamleader/Teamleader.node.js"
     ]
   },
   "devDependencies": {
