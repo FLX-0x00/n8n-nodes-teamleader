@@ -639,6 +639,7 @@ export class Teamleader implements INodeType {
 							'contacts.add',
 							'contacts.update',
 							'contacts.delete',
+							'contacts.info',
 							'contacts.linkToCompany',
 							'contacts.unlinkFromCompany',
 							'contacts.updateCompanyLink',
