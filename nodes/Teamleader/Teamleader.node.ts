@@ -400,6 +400,25 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Tags', name: 'tags', type: 'multiOptions', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: [], required: false, description: 'The tags of the company. Multiple tags can be added separated by commas.', typeOptions: { loadOptionsMethod: 'loadTags' } },
 			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: false, required: false, description: 'Whether the company has given consent to receive marketing mails.' },
 			{ displayName: 'Preferred Currency', name: 'preferred_currency', type: 'options', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: 'EUR', required: false, description: 'The preferred currency of the company.', options: [ { name: 'BAM', value: 'BAM' }, { name: 'CAD', value: 'CAD' }, { name: 'CHF', value: 'CHF' }, { name: 'CLP', value: 'CLP' }, { name: 'CNY', value: 'CNY' }, { name: 'COP', value: 'COP' }, { name: 'CZK', value: 'CZK' }, { name: 'DKK', value: 'DKK' }, { name: 'EUR', value: 'EUR' }, { name: 'GBP', value: 'GBP' }, { name: 'INR', value: 'INR' }, { name: 'ISK', value: 'ISK' }, { name: 'JPY', value: 'JPY' }, { name: 'MAD', value: 'MAD' }, { name: 'MXN', value: 'MXN' }, { name: 'NOK', value: 'NOK' }, { name: 'PEN', value: 'PEN' }, { name: 'PLN', value: 'PLN' }, { name: 'RON', value: 'RON' }, { name: 'SEK', value: 'SEK' }, { name: 'TRY', value: 'TRY' }, { name: 'USD', value: 'USD' }, { name: 'ZAR', value: 'ZAR' } ], },
+			// Generic list filter support (term) for supported .list operations
+			{ displayName: 'Search Term', name: 'term', type: 'string', displayOptions: { show: { operation: [
+				'users.list',
+				'teams.list',
+				'customFieldDefinitions.list',
+				'tickets.list',
+				'deals.list',
+				'webhooks.list', // may be ignored if API does not support term
+				'tags.list',
+				'companies.list',
+				'contacts.list',
+				'businessTypes.list',
+				'dealPhases.list',
+				'subscriptions.list',
+				'products.list',
+				'projects-v2/projects.list',
+				'tasks.list',
+				'files.list',
+			] } }, default: '', required: false, description: 'Filter results by a free-text search term (sent as filter.term). Only applied to supported list endpoints.' },
 			// Operations for Business Types
 			{
 				displayName: 'Operation',
@@ -767,7 +786,34 @@ export class Teamleader implements INodeType {
 				const qs: IDataObject = { page: { size: limit } };
 
 				// merge additionalFields with qs
-				const data = Object.assign(qs, cleaned_parameters);
+				let data = Object.assign(qs, cleaned_parameters);
+
+				// If operation is a supported list endpoint and term is provided, move it under filter.term
+				const termSupportedOperations = [
+					'users.list',
+					'teams.list',
+					'customFieldDefinitions.list',
+					'tickets.list',
+					'deals.list',
+					'webhooks.list',
+					'tags.list',
+					'companies.list',
+					'contacts.list',
+					'businessTypes.list',
+					'dealPhases.list',
+					'subscriptions.list',
+					'products.list',
+					'projects-v2/projects.list',
+					'tasks.list',
+					'files.list',
+				];
+				if (data.term && termSupportedOperations.includes(operation)) {
+					const { term, ...rest } = data as IDataObject;
+					data = {
+						...rest,
+						filter: { term },
+					};
+				}
 
 				const options: IRequestOptions = {
 					method,
