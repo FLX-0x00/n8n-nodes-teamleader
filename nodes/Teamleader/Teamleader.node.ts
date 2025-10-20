@@ -362,6 +362,8 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Remarks', name: 'remarks', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: '', required: false, description: 'The remarks of the contact.' },
 			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: false, required: false, description: 'Whether the contact has given consent to receive marketing mails.' },
 			{ displayName: 'Company ID', name: 'company_id', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update', 'contacts.linkToCompany', 'contacts.unlinkFromCompany', 'contacts.updateCompanyLink'] } }, default: '', required: true, description: 'The ID of the company the contact is linked to.' },
+			// Filter field for contacts.list (company_id) - separate to avoid required=true conflict
+			{ displayName: 'Filter Company ID', name: 'filter_company_id', type: 'string', displayOptions: { show: { operation: ['contacts.list'] } }, default: '', required: false, description: 'Filter contacts belonging to a specific company ID. Sent as filter.company_id.' },
 			{ displayName: 'Position', name: 'position', type: 'string', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: '', required: false, description: 'The position of the contact.' },
 			{ displayName: 'Decision Maker', name: 'decision_maker', type: 'boolean', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: false, required: false, description: 'Whether the contact is a decision maker.' },
 			// Operations for Companies
@@ -401,7 +403,7 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: false, required: false, description: 'Whether the company has given consent to receive marketing mails.' },
 			{ displayName: 'Preferred Currency', name: 'preferred_currency', type: 'options', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: 'EUR', required: false, description: 'The preferred currency of the company.', options: [ { name: 'BAM', value: 'BAM' }, { name: 'CAD', value: 'CAD' }, { name: 'CHF', value: 'CHF' }, { name: 'CLP', value: 'CLP' }, { name: 'CNY', value: 'CNY' }, { name: 'COP', value: 'COP' }, { name: 'CZK', value: 'CZK' }, { name: 'DKK', value: 'DKK' }, { name: 'EUR', value: 'EUR' }, { name: 'GBP', value: 'GBP' }, { name: 'INR', value: 'INR' }, { name: 'ISK', value: 'ISK' }, { name: 'JPY', value: 'JPY' }, { name: 'MAD', value: 'MAD' }, { name: 'MXN', value: 'MXN' }, { name: 'NOK', value: 'NOK' }, { name: 'PEN', value: 'PEN' }, { name: 'PLN', value: 'PLN' }, { name: 'RON', value: 'RON' }, { name: 'SEK', value: 'SEK' }, { name: 'TRY', value: 'TRY' }, { name: 'USD', value: 'USD' }, { name: 'ZAR', value: 'ZAR' } ], },
 			// Generic list filter support (term) for supported .list operations
-			{ displayName: 'Search Term', name: 'term', type: 'string', displayOptions: { show: { operation: [
+			{ displayName: 'Filter Search Term', name: 'term', type: 'string', displayOptions: { show: { operation: [
 				'users.list',
 				'teams.list',
 				'customFieldDefinitions.list',
@@ -807,11 +809,19 @@ export class Teamleader implements INodeType {
 					'tasks.list',
 					'files.list',
 				];
-				if (data.term && termSupportedOperations.includes(operation)) {
-					const { term, ...rest } = data as IDataObject;
+				if (data.term || data.filter_company_id) {
+					const { term, filter_company_id, ...rest } = data as IDataObject;
+					const filter: IDataObject = {};
+					if (term && termSupportedOperations.includes(operation)) {
+						filter.term = term;
+					}
+					// company_id can always be applied if provided (API will ignore for unsupported endpoints)
+					if (filter_company_id) {
+						filter.company_id = filter_company_id;
+					}
 					data = {
 						...rest,
-						filter: { term },
+						filter,
 					};
 				}
 
