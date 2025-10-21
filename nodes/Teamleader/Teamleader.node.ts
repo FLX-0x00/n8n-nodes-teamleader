@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type {
+import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
@@ -363,7 +363,7 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['contacts.add', 'contacts.update'] } }, default: false, required: false, description: 'Whether the contact has given consent to receive marketing mails.' },
 			{ displayName: 'Company ID', name: 'company_id', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update', 'contacts.linkToCompany', 'contacts.unlinkFromCompany', 'contacts.updateCompanyLink'] } }, default: '', required: true, description: 'The ID of the company the contact is linked to.' },
 			// Filter field for contacts.list (company_id) - separate to avoid required=true conflict
-			{ displayName: 'Filter Company ID', name: 'filter_company_id', type: 'string', displayOptions: { show: { operation: ['contacts.list', 'subscriptions.list'] } }, default: '', required: false, description: 'Filter contacts belonging to a specific company ID. Sent as filter.company_id.' },
+			{ displayName: 'Filter Company ID', name: 'filter_company_id', type: 'string', displayOptions: { show: { operation: ['contacts.list'] } }, default: '', required: false, description: 'Filter contacts belonging to a specific company ID. Sent as filter.company_id.' },
 			{ displayName: 'Position', name: 'position', type: 'string', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: '', required: false, description: 'The position of the contact.' },
 			{ displayName: 'Decision Maker', name: 'decision_maker', type: 'boolean', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: false, required: false, description: 'Whether the contact is a decision maker.' },
 			// Operations for Companies
@@ -532,6 +532,8 @@ export class Teamleader implements INodeType {
 				default: 'subscriptions.list',
 				description: 'The operation to perform.',
 			},
+			// subscriptions.list customer filter
+			{ displayName: 'Customer', name: 'filter_customer_collection', type: 'fixedCollection', displayOptions: { show: { operation: ['subscriptions.list'] } }, default: {}, required: false, description: 'Filter subscriptions by customer (company or contact). Sent as filter.customer.{type,id}.', options: [ { name: 'customer', displayName: 'Customer', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { name: 'Company', value: 'company' }, { name: 'Contact', value: 'contact' } ], default: 'company', required: true }, { displayName: 'ID', name: 'id', type: 'string', default: '', required: true } ] } ] },
 			// Operations for Products
 			{
 				displayName: 'Operation',
@@ -810,8 +812,8 @@ export class Teamleader implements INodeType {
 					'tasks.list',
 					'files.list',
 				];
-				if (data.term || data.filter_company_id) {
-					const { term, filter_company_id, ...rest } = data as IDataObject;
+				if (data.term || data.filter_company_id || data.filter_customer_collection) {
+					const { term, filter_company_id, filter_customer_collection, ...rest } = data as IDataObject;
 					const filter: IDataObject = {};
 					if (term && termSupportedOperations.includes(operation)) {
 						filter.term = term;
@@ -819,6 +821,16 @@ export class Teamleader implements INodeType {
 					// company_id can always be applied if provided (API will ignore for unsupported endpoints)
 					if (filter_company_id) {
 						filter.company_id = filter_company_id;
+					}
+					// subscriptions.list: customer filter (single customer)
+					if (filter_customer_collection) {
+						const firstEntry = Object.values(filter_customer_collection)[0] as IDataObject[] | IDataObject;
+						const customer = Array.isArray(firstEntry) ? firstEntry[0] : firstEntry;
+						if (customer && (customer as IDataObject).type && (customer as IDataObject).id) {
+							const c = customer as IDataObject;
+							filter.customer = { type: c.type, id: c.id };
+						}
+
 					}
 					data = {
 						...rest,
