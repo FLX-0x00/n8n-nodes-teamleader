@@ -514,7 +514,7 @@ export class Teamleader implements INodeType {
 				description: 'The operation to perform.',
 			},
 			// subscriptions.list customer filter
-			{ displayName: 'Customer', name: 'filter_customer_collection', type: 'fixedCollection', displayOptions: { show: { operation: ['subscriptions.list'] } }, default: {}, required: false, description: 'Filter subscriptions by customer (company or contact). Sent as filter.customer.{type,id}.', options: [ { name: 'customer', displayName: 'Customer', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { name: 'Company', value: 'company' }, { name: 'Contact', value: 'contact' } ], default: 'company', required: true }, { displayName: 'ID', name: 'id', type: 'string', default: '', required: true } ] } ] },
+			{ displayName: 'Customer', name: 'filter_customer_collection', type: 'fixedCollection', displayOptions: { show: { operation: ['subscriptions.list', 'deals.list'] } }, default: {}, required: false, description: 'Filter subscriptions by customer (company or contact). Sent as filter.customer.{type,id}.', options: [ { name: 'customer', displayName: 'Customer', values: [ { displayName: 'Type', name: 'type', type: 'options', options: [ { name: 'Company', value: 'company' }, { name: 'Contact', value: 'contact' } ], default: 'company', required: true }, { displayName: 'ID', name: 'id', type: 'string', default: '', required: true } ] } ] },
 			// Operations for Products
 			{
 				displayName: 'Operation',
