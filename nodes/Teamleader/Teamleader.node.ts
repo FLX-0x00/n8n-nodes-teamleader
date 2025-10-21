@@ -235,7 +235,6 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Summary', name: 'summary', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Additional information / summary.' },
 			{ displayName: 'Source ID', name: 'source_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Source ID of the deal.' },
 			{ displayName: 'Department ID', name: 'department_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Department ID.' },
-			{ displayName: 'Responsible User ID', name: 'responsible_user_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Responsible user ID.' },
 			{ displayName: 'Phase ID', name: 'phase_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Starting phase ID.' },
 			{ displayName: 'Estimated Probability', name: 'estimated_probability', type: 'number', displayOptions: { show: { operation: ['deals.create'] } }, default: 0, required: false, description: 'Probability (0 - 1 or percentage as per API).' },
 			{ displayName: 'Estimated Closing Date', name: 'estimated_closing_date', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Estimated closing date (YYYY-MM-DD).' },
