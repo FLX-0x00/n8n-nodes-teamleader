@@ -216,8 +216,7 @@ export class Teamleader implements INodeType {
 				options: [
 					{ name: 'List', value: 'deals.list', description: 'Get a list of all deals.' },
 					{ name: 'Info', value: 'deals.info', description: 'Get details for a single deal.' },
-					// creating a deal will be implemented in the future because more complex data as input is needed
-					//{ name: 'Create', value: 'deals.create', description: 'Create a new deal.' },
+					{ name: 'Create', value: 'deals.create', description: 'Create a new deal.' },
 					{ name: 'Update', value: 'deals.update', description: 'Update a deal.' },
 					{ name: 'Delete', value: 'deals.delete', description: 'Delete a deal.' },
 					{ name: 'Move', value: 'deals.move', description: 'Move a deal to a different stage.' },
@@ -228,6 +227,26 @@ export class Teamleader implements INodeType {
 				description: 'The operation to perform.',
 			},
 			{ displayName: 'Title', name: 'title', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: true, description: 'The title of the deal.' },
+			// Lead (customer + optional contact person)
+			{ displayName: 'Lead Customer Type', name: 'lead_customer_type', type: 'options', displayOptions: { show: { operation: ['deals.create'] } }, options: [ { name: 'Company', value: 'company' }, { name: 'Contact', value: 'contact' } ], default: 'company', required: true, description: 'Type of the customer for the lead.' },
+			{ displayName: 'Lead Customer ID', name: 'lead_customer_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: true, description: 'ID of the customer (company/contact) for the lead.' },
+			{ displayName: 'Contact Person ID', name: 'contact_person_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Optional contact person ID.' },
+			// Core optional fields
+			{ displayName: 'Summary', name: 'summary', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Additional information / summary.' },
+			{ displayName: 'Source ID', name: 'source_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Source ID of the deal.' },
+			{ displayName: 'Department ID', name: 'department_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Department ID.' },
+			{ displayName: 'Responsible User ID', name: 'responsible_user_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Responsible user ID.' },
+			{ displayName: 'Phase ID', name: 'phase_id', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Starting phase ID.' },
+			{ displayName: 'Estimated Probability', name: 'estimated_probability', type: 'number', displayOptions: { show: { operation: ['deals.create'] } }, default: 0, required: false, description: 'Probability (0 - 1 or percentage as per API).' },
+			{ displayName: 'Estimated Closing Date', name: 'estimated_closing_date', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: '', required: false, description: 'Estimated closing date (YYYY-MM-DD).' },
+			// Estimated value (amount + currency)
+			{ displayName: 'Estimated Amount', name: 'estimated_amount', type: 'number', displayOptions: { show: { operation: ['deals.create'] } }, default: 0, required: false, description: 'Estimated value amount.' },
+			{ displayName: 'Estimated Currency', name: 'estimated_currency', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: 'EUR', required: false, description: 'Estimated value currency code.' },
+			// Currency object (code + exchange_rate)
+			{ displayName: 'Currency Code', name: 'currency_code', type: 'string', displayOptions: { show: { operation: ['deals.create'] } }, default: 'EUR', required: false, description: 'Deal currency code.' },
+			{ displayName: 'Currency Exchange Rate', name: 'currency_exchange_rate', type: 'number', displayOptions: { show: { operation: ['deals.create'] } }, default: 1, required: false, description: 'Exchange rate for the currency.' },
+			// Custom fields collection
+			{ displayName: 'Custom Fields', name: 'custom_fields_collection', type: 'fixedCollection', displayOptions: { show: { operation: ['deals.create'] } }, typeOptions: { multipleValues: true }, default: {}, placeholder: 'Add Custom Field', options: [ { name: 'custom_field', displayName: 'Custom Field', values: [ { displayName: 'Field ID', name: 'id', type: 'string', default: '', required: true }, { displayName: 'Value', name: 'value', type: 'string', default: '', required: true } ] } ] },
 			{ displayName: 'Title', name: 'title', type: 'string', displayOptions: { show: { operation: ['deals.update'] } }, default: '', required: false, description: 'The title of the deal. Empty values are ignored and cause no overwrite' },
 			{ displayName: 'Summary', name: 'summary', type: 'string', displayOptions: { show: { operation: ['deals.create', 'deals.update'] } }, default: '', required: false, description: 'The summary of the deal. Empty values are ignored and cause no overwrite' },
 			{ displayName: 'Source ID', name: 'source_id', type: 'string', displayOptions: { show: { operation: ['deals.create', 'deals.update'] } }, default: '', required: false, description: 'The source ID of the deal. Empty values are ignored and cause no overwrite' },
@@ -734,47 +753,56 @@ export class Teamleader implements INodeType {
 				let responseData;
 				const limit = this.getNodeParameter('limit', i, 0) as number;
 				const all_parameters = this.getNode().parameters as IDataObject || {};
-				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, value]) => {
-					if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
-						let fieldValue = this.getNodeParameter(key, i) as IDataObject | IDataObject[];
-						// key does not have resource or operation in it
-						if (!key.includes('resource') && !key.includes('operation')) {
-							// if field name contains 'filter' then nest under filter object
-							if (key.startsWith('filter_')) {
-								if (!acc.filter) {
-									acc.filter = {};
-								}
-								// If the fieldValue is an object, add it directly without converting it
-								if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
-									acc.filter = fieldValue;
-								} else if (typeof fieldValue === 'string' && fieldValue !== '') {
-									const filterKey = key.replace('filter_', '');
-									(acc.filter as IDataObject)[filterKey] = fieldValue;
-								}
-							}
-							// If the fieldValue is a string, assign directly
-							else if (typeof fieldValue === 'string') {
-								acc[key] = fieldValue;
-							}
-							// If the fieldValue is an array, add the array as it is (if it is not empty)
-							else if (Array.isArray(fieldValue) && fieldValue.length > 0) {
-								acc[key] = fieldValue;
-							}
+				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, originalValue]) => {
+					// Always fetch the runtime value (resolves expressions)
+					let fieldValue: any;
+					try { fieldValue = this.getNodeParameter(key, i); } catch { return acc; }
+					// Ignore resource/operation meta
+					if (key.includes('resource') || key.includes('operation')) return acc;
+					// Skip truly empty (but keep 0 / false)
+					const isEmptyArray = Array.isArray(fieldValue) && fieldValue.length === 0;
+					const isEmptyString = fieldValue === '';
+					if (fieldValue === undefined || fieldValue === null || isEmptyArray || isEmptyString) return acc;
 
-							// If the fieldValue is an object, add it directly without converting it
-							else if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
-								if (key.includes('collection')) {
-									const [collection_key, collection_value] = Object.entries(fieldValue)[0];
-									acc[collection_key] = collection_value;
-								} else {
-									acc[key] = fieldValue;
-								}
-							}
-							// For boolean values, assign them directly
-							else if (typeof fieldValue === 'boolean') {
-								acc[key] = fieldValue;
-							}
+					// Collections -> unwrap first layer
+					if (key.endsWith('_collection') && typeof fieldValue === 'object' && !Array.isArray(fieldValue)) {
+						const entries = Object.entries(fieldValue as IDataObject);
+						if (entries.length) {
+							const [collection_key, collection_value] = entries[0];
+							fieldValue = collection_value; // Use inner value
+							key = collection_key === 'custom_field' ? 'custom_fields_collection' : key; // keep custom field wrapper naming for later
 						}
+					}
+
+					// Handle filters uniformly: prefix filter_ maps to filter.term / filter.company_id / filter.customer
+					if (key.startsWith('filter_')) {
+						if (!acc.filter) acc.filter = {};
+						const filterKey = key.replace('filter_', '');
+						// customer is itself a fixedCollection result (object or array)
+						if (filterKey === 'customer') {
+							// fieldValue may be array with one element or object
+							let customerVal: any = fieldValue;
+							if (Array.isArray(customerVal)) customerVal = customerVal[0];
+							if (customerVal && customerVal.type && customerVal.id) {
+								(acc.filter as IDataObject).customer = { type: customerVal.type, id: customerVal.id };
+							}
+						} else if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
+							(acc.filter as IDataObject)[filterKey] = fieldValue;
+						}
+						return acc;
+					}
+
+					// Booleans
+					if (typeof fieldValue === 'boolean') { acc[key] = fieldValue; return acc; }
+					// Numbers (keep 0)
+					if (typeof fieldValue === 'number') { acc[key] = fieldValue; return acc; }
+					// Strings
+					if (typeof fieldValue === 'string') { acc[key] = fieldValue; return acc; }
+					// Arrays (non-empty)
+					if (Array.isArray(fieldValue)) { acc[key] = fieldValue; return acc; }
+					// Objects
+					if (typeof fieldValue === 'object' && Object.keys(fieldValue).length) {
+						acc[key] = fieldValue;
 					}
 					return acc;
 				}, {} as IDataObject);
@@ -784,6 +812,55 @@ export class Teamleader implements INodeType {
 
 				// merge additionalFields with qs
 				let data = Object.assign(qs, cleaned_parameters);
+
+				// Generic nested mapping for deals.create
+				if (operation === 'deals.create') {
+					// Helper to set deep paths like 'lead.customer.type'
+					const setPath = (obj: IDataObject, path: string, value: unknown) => {
+						if (value === undefined || value === '' || value === null) return;
+						const segs = path.split('.');
+						let cursor: IDataObject = obj;
+						for (let i = 0; i < segs.length - 1; i++) {
+							const s = segs[i];
+							if (cursor[s] === undefined) cursor[s] = {};
+							cursor = cursor[s] as IDataObject;
+						}
+						cursor[segs[segs.length - 1]] = value as unknown as IDataObject;
+					};
+					// Map of flat parameter -> nested target path
+					const mapping: Record<string, string> = {
+						lead_customer_type: 'lead.customer.type',
+						lead_customer_id: 'lead.customer.id',
+						contact_person_id: 'lead.contact_person_id',
+						estimated_amount: 'estimated_value.amount',
+						estimated_currency: 'estimated_value.currency',
+						currency_code: 'currency.code',
+						currency_exchange_rate: 'currency.exchange_rate',
+					};
+					const base: IDataObject = {};
+					Object.entries(mapping).forEach(([src, dest]) => setPath(base, dest, (cleaned_parameters as IDataObject)[src]));
+					// Title mandatory
+					base.title = cleaned_parameters.title;
+					// Optional simple passthroughs
+					['summary','source_id','department_id','responsible_user_id','phase_id','estimated_probability','estimated_closing_date']
+						.forEach(k => { if ((cleaned_parameters as IDataObject)[k] !== undefined && (cleaned_parameters as IDataObject)[k] !== '') base[k] = (cleaned_parameters as IDataObject)[k]; });
+					// Custom fields collection -> custom_fields array
+					if ((cleaned_parameters as IDataObject).custom_fields_collection) {
+						const cfWrapper = (cleaned_parameters as IDataObject).custom_fields_collection as IDataObject;
+						const raw = Object.values(cfWrapper)[0];
+						let arr: IDataObject[] = [];
+						if (Array.isArray(raw)) arr = raw as IDataObject[]; else if (raw && (raw as IDataObject).id) arr = [ raw as IDataObject ];
+						arr = arr.filter(r => r && r.id && r.value);
+						if (arr.length) base.custom_fields = arr;
+					}
+					// Default exchange_rate if currency.code present but no rate (API expects it)
+					if (base.currency && (base.currency as IDataObject).code && (base.currency as IDataObject).exchange_rate === undefined) {
+						(base.currency as IDataObject).exchange_rate = 1;
+					}
+					// Drop empty nested containers
+					['estimated_value','currency','lead'].forEach(k => { if (base[k] && Object.keys(base[k] as IDataObject).length === 0) delete base[k]; });
+					data = base;
+				}
 
 				const options: IRequestOptions = {
 					method,
