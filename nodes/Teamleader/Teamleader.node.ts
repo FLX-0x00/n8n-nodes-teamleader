@@ -364,25 +364,7 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Company ID', name: 'company_id', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update', 'contacts.linkToCompany', 'contacts.unlinkFromCompany', 'contacts.updateCompanyLink'] } }, default: '', required: true, description: 'The ID of the company the contact is linked to.' },
 			// Filter field for contacts.list (company_id) - separate to avoid required=true conflict
 			{ displayName: 'Filter Company ID', name: 'filter_company_id', type: 'string', displayOptions: { show: { operation: ['contacts.list'] } }, default: '', required: false, description: 'Filter contacts belonging to a specific company ID. Sent as filter.company_id.' },
-			// Generic list filter support (term) for supported .list operations
-			{ displayName: 'Filter Search Term', name: 'filter_term', type: 'string', displayOptions: { show: { operation: [
-				'users.list',
-				'teams.list',
-				'customFieldDefinitions.list',
-				'tickets.list',
-				'deals.list',
-				'webhooks.list', // may be ignored if API does not support term
-				'tags.list',
-				'companies.list',
-				'contacts.list',
-				'businessTypes.list',
-				'dealPhases.list',
-				'subscriptions.list',
-				'products.list',
-				'projects-v2/projects.list',
-				'tasks.list',
-				'files.list',
-			] } }, default: '', required: false, description: 'Filter results by a free-text search term (sent as filter.term).' },
+			{ displayName: 'Filter by Term', name: 'filter_term', type: 'string', displayOptions: { show: { operation: ['companies.list', 'invoices.list', 'deals.list'] } }, default: '', required: false, description: 'Filter subscriptions by a search term (sent as filter.term).' },
 			{ displayName: 'Position', name: 'position', type: 'string', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: '', required: false, description: 'The position of the contact.' },
 			{ displayName: 'Decision Maker', name: 'decision_maker', type: 'boolean', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: false, required: false, description: 'Whether the contact is a decision maker.' },
 			// Operations for Companies
@@ -751,9 +733,7 @@ export class Teamleader implements INodeType {
 			try {
 				let responseData;
 				const limit = this.getNodeParameter('limit', i, 0) as number;
-
 				const all_parameters = this.getNode().parameters as IDataObject || {};
-
 				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, value]) => {
 					if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
 						let fieldValue = this.getNodeParameter(key, i) as IDataObject | IDataObject[];
@@ -811,11 +791,6 @@ export class Teamleader implements INodeType {
 					url: operation,
 					json: true,
 					body: { ...data },
-					// burper proxy support
-					proxy: {
-						host: '127.0.0.1',
-						port: 8080,
-					},
 				};
 
 				responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
