@@ -364,6 +364,25 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Company ID', name: 'company_id', type: 'string', displayOptions: { show: { operation: ['contacts.add', 'contacts.update', 'contacts.linkToCompany', 'contacts.unlinkFromCompany', 'contacts.updateCompanyLink'] } }, default: '', required: true, description: 'The ID of the company the contact is linked to.' },
 			// Filter field for contacts.list (company_id) - separate to avoid required=true conflict
 			{ displayName: 'Filter Company ID', name: 'filter_company_id', type: 'string', displayOptions: { show: { operation: ['contacts.list'] } }, default: '', required: false, description: 'Filter contacts belonging to a specific company ID. Sent as filter.company_id.' },
+			// Generic list filter support (term) for supported .list operations
+			{ displayName: 'Filter Search Term', name: 'filter_term', type: 'string', displayOptions: { show: { operation: [
+				'users.list',
+				'teams.list',
+				'customFieldDefinitions.list',
+				'tickets.list',
+				'deals.list',
+				'webhooks.list', // may be ignored if API does not support term
+				'tags.list',
+				'companies.list',
+				'contacts.list',
+				'businessTypes.list',
+				'dealPhases.list',
+				'subscriptions.list',
+				'products.list',
+				'projects-v2/projects.list',
+				'tasks.list',
+				'files.list',
+			] } }, default: '', required: false, description: 'Filter results by a free-text search term (sent as filter.term).' },
 			{ displayName: 'Position', name: 'position', type: 'string', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: '', required: false, description: 'The position of the contact.' },
 			{ displayName: 'Decision Maker', name: 'decision_maker', type: 'boolean', displayOptions: { show: { operation: ['contacts.linkToCompany', 'contacts.updateCompanyLink'] } }, default: false, required: false, description: 'Whether the contact is a decision maker.' },
 			// Operations for Companies
@@ -402,25 +421,6 @@ export class Teamleader implements INodeType {
 			{ displayName: 'Tags', name: 'tags', type: 'multiOptions', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: [], required: false, description: 'The tags of the company. Multiple tags can be added separated by commas.', typeOptions: { loadOptionsMethod: 'loadTags' } },
 			{ displayName: 'Marketing Mails Consent', name: 'marketing_mails_consent', type: 'boolean', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: false, required: false, description: 'Whether the company has given consent to receive marketing mails.' },
 			{ displayName: 'Preferred Currency', name: 'preferred_currency', type: 'options', displayOptions: { show: { operation: ['companies.add', 'companies.update'] } }, default: 'EUR', required: false, description: 'The preferred currency of the company.', options: [ { name: 'BAM', value: 'BAM' }, { name: 'CAD', value: 'CAD' }, { name: 'CHF', value: 'CHF' }, { name: 'CLP', value: 'CLP' }, { name: 'CNY', value: 'CNY' }, { name: 'COP', value: 'COP' }, { name: 'CZK', value: 'CZK' }, { name: 'DKK', value: 'DKK' }, { name: 'EUR', value: 'EUR' }, { name: 'GBP', value: 'GBP' }, { name: 'INR', value: 'INR' }, { name: 'ISK', value: 'ISK' }, { name: 'JPY', value: 'JPY' }, { name: 'MAD', value: 'MAD' }, { name: 'MXN', value: 'MXN' }, { name: 'NOK', value: 'NOK' }, { name: 'PEN', value: 'PEN' }, { name: 'PLN', value: 'PLN' }, { name: 'RON', value: 'RON' }, { name: 'SEK', value: 'SEK' }, { name: 'TRY', value: 'TRY' }, { name: 'USD', value: 'USD' }, { name: 'ZAR', value: 'ZAR' } ], },
-			// Generic list filter support (term) for supported .list operations
-			{ displayName: 'Filter Search Term', name: 'term', type: 'string', displayOptions: { show: { operation: [
-				'users.list',
-				'teams.list',
-				'customFieldDefinitions.list',
-				'tickets.list',
-				'deals.list',
-				'webhooks.list', // may be ignored if API does not support term
-				'tags.list',
-				'companies.list',
-				'contacts.list',
-				'businessTypes.list',
-				'dealPhases.list',
-				'subscriptions.list',
-				'products.list',
-				'projects-v2/projects.list',
-				'tasks.list',
-				'files.list',
-			] } }, default: '', required: false, description: 'Filter results by a free-text search term (sent as filter.term). Only applied to supported list endpoints.' },
 			// Operations for Business Types
 			{
 				displayName: 'Operation',
@@ -488,8 +488,7 @@ export class Teamleader implements INodeType {
 					},
 				},
 				options: [
-					// Filter is required for the list operation and this is not supported yet
-					// { name: 'List', value: 'invoices.list', description: 'Get a list of all invoices.' },
+					{ name: 'List', value: 'invoices.list', description: 'Get a list of all invoices.' },
 					{ name: 'Info', value: 'invoices.info', description: 'Get details for a single invoice.' },
 					{ name: 'Download', value: 'invoices.download', description: 'Create a new invoice.' },
 					{ name: 'Delete', value: 'invoices.delete', description: 'Delete an invoice.' },
@@ -758,17 +757,30 @@ export class Teamleader implements INodeType {
 				const cleaned_parameters = Object.entries(all_parameters).reduce((acc, [key, value]) => {
 					if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
 						let fieldValue = this.getNodeParameter(key, i) as IDataObject | IDataObject[];
-
 						// key does not have resource or operation in it
 						if (!key.includes('resource') && !key.includes('operation')) {
+							// if field name contains 'filter' then nest under filter object
+							if (key.startsWith('filter_')) {
+								if (!acc.filter) {
+									acc.filter = {};
+								}
+								// If the fieldValue is an object, add it directly without converting it
+								if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
+									acc.filter = fieldValue;
+								} else if (typeof fieldValue === 'string' && fieldValue !== '') {
+									const filterKey = key.replace('filter_', '');
+									(acc.filter as IDataObject)[filterKey] = fieldValue;
+								}
+							}
 							// If the fieldValue is a string, assign directly
-							if (typeof fieldValue === 'string') {
+							else if (typeof fieldValue === 'string') {
 								acc[key] = fieldValue;
 							}
 							// If the fieldValue is an array, add the array as it is (if it is not empty)
 							else if (Array.isArray(fieldValue) && fieldValue.length > 0) {
 								acc[key] = fieldValue;
 							}
+
 							// If the fieldValue is an object, add it directly without converting it
 							else if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
 								if (key.includes('collection')) {
@@ -793,57 +805,17 @@ export class Teamleader implements INodeType {
 				// merge additionalFields with qs
 				let data = Object.assign(qs, cleaned_parameters);
 
-				// If operation is a supported list endpoint and term is provided, move it under filter.term
-				const termSupportedOperations = [
-					'users.list',
-					'teams.list',
-					'customFieldDefinitions.list',
-					'tickets.list',
-					'deals.list',
-					'webhooks.list',
-					'tags.list',
-					'companies.list',
-					'contacts.list',
-					'businessTypes.list',
-					'dealPhases.list',
-					'subscriptions.list',
-					'products.list',
-					'projects-v2/projects.list',
-					'tasks.list',
-					'files.list',
-				];
-				if (data.term || data.filter_company_id || data.filter_customer_collection) {
-					const { term, filter_company_id, filter_customer_collection, ...rest } = data as IDataObject;
-					const filter: IDataObject = {};
-					if (term && termSupportedOperations.includes(operation)) {
-						filter.term = term;
-					}
-					// company_id can always be applied if provided (API will ignore for unsupported endpoints)
-					if (filter_company_id) {
-						filter.company_id = filter_company_id;
-					}
-					// subscriptions.list: customer filter (single customer)
-					if (filter_customer_collection) {
-						const firstEntry = Object.values(filter_customer_collection)[0] as IDataObject[] | IDataObject;
-						const customer = Array.isArray(firstEntry) ? firstEntry[0] : firstEntry;
-						if (customer && (customer as IDataObject).type && (customer as IDataObject).id) {
-							const c = customer as IDataObject;
-							filter.customer = { type: c.type, id: c.id };
-						}
-
-					}
-					data = {
-						...rest,
-						filter,
-					};
-				}
-
 				const options: IRequestOptions = {
 					method,
 					baseURL,
 					url: operation,
 					json: true,
 					body: { ...data },
+					// burper proxy support
+					proxy: {
+						host: '127.0.0.1',
+						port: 8080,
+					},
 				};
 
 				responseData = await this.helpers.requestOAuth2.call(this, 'teamleaderOAuth2Api', options, { tokenType: 'Bearer' });
