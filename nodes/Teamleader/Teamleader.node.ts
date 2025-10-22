@@ -762,7 +762,18 @@ export class Teamleader implements INodeType {
 					const isEmptyArray = Array.isArray(fieldValue) && fieldValue.length === 0;
 					const isEmptyString = fieldValue === '';
 					if (fieldValue === undefined || fieldValue === null || isEmptyArray || isEmptyString) return acc;
-
+					if (key.startsWith('filter_')) {
+						if (!acc.filter) {
+							acc.filter = {};
+						}
+						// If the fieldValue is an object, add it directly without converting it
+						if (typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0) {
+							acc.filter = fieldValue;
+						} else if (typeof fieldValue === 'string' && fieldValue !== '') {
+							const filterKey = key.replace('filter_', '');
+							(acc.filter as IDataObject)[filterKey] = fieldValue;
+						}
+					}
 					// Collections -> unwrap first layer
 					if (key.endsWith('_collection') && typeof fieldValue === 'object' && !Array.isArray(fieldValue)) {
 						const entries = Object.entries(fieldValue as IDataObject);
@@ -772,25 +783,6 @@ export class Teamleader implements INodeType {
 							key = collection_key === 'custom_field' ? 'custom_fields_collection' : key; // keep custom field wrapper naming for later
 						}
 					}
-
-					// Handle filters uniformly: prefix filter_ maps to filter.term / filter.company_id / filter.customer
-					if (key.startsWith('filter_')) {
-						if (!acc.filter) acc.filter = {};
-						const filterKey = key.replace('filter_', '');
-						// customer is itself a fixedCollection result (object or array)
-						if (filterKey === 'customer') {
-							// fieldValue may be array with one element or object
-							let customerVal: any = fieldValue;
-							if (Array.isArray(customerVal)) customerVal = customerVal[0];
-							if (customerVal && customerVal.type && customerVal.id) {
-								(acc.filter as IDataObject).customer = { type: customerVal.type, id: customerVal.id };
-							}
-						} else if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
-							(acc.filter as IDataObject)[filterKey] = fieldValue;
-						}
-						return acc;
-					}
-
 					// Booleans
 					if (typeof fieldValue === 'boolean') { acc[key] = fieldValue; return acc; }
 					// Numbers (keep 0)
