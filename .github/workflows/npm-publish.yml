@@ -24,4 +24,5 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build --if-present
+      - run: pnpm config set registry https://registry.npmjs.org/
       - run: pnpm publish --provenance --access public --no-git-checks
