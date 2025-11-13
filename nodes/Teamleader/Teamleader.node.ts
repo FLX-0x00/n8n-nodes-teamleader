@@ -64,6 +64,7 @@ export class Teamleader implements INodeType {
 					{ name: 'Projects', value: 'project' },
 					{ name: 'Tasks', value: 'task' },
 					{ name: 'Files', value: 'file' },
+					{ name: 'Notes', value: 'note' },
 				],
 				default: 'user',
 				noDataExpression: true,
@@ -615,6 +616,24 @@ export class Teamleader implements INodeType {
 				default: 'files.list',
 				description: 'The operation to perform.',
 			},
+			// Operations for Notes
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: [
+							'note'
+						],
+					},
+				},
+				options: [
+					{ name: 'List', value: 'notes.list', description: 'Get a list of all notes.' },
+				],
+				default: 'notes.list',
+				description: 'The operation to perform.',
+			},
 			// ID and Limit
 			{	displayName: 'ID',
 				name: 'id',
@@ -697,6 +716,7 @@ export class Teamleader implements INodeType {
 							'projects-v2/projects.list',
 							'tasks.list',
 							'files.list',
+							'notes.list',
 						]
 					}
 				}

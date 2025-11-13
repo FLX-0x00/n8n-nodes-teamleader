@@ -22,7 +22,7 @@ export class TeamleaderOAuth2Api implements ICredentialType {
 			displayName: 'Grant Type',
 			name: 'grantType',
 			type: 'hidden',
-			default: 'authorizationCode',
+			default: 'authorization_code',
 		},
 		{
 			displayName: 'Authorization URL',
