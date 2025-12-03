@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-teamleader",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "n8n community node for Teamleader CRM",
   "keywords": [
     "n8n-community-node-package",
@@ -24,15 +24,15 @@
     "url": "git+https://github.com/FLX-0x00/n8n-nodes-teamleader.git"
   },
   "packageManager": "pnpm@10.22.0",
-	"scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
-	},
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
   "files": [
     "dist"
   ],
@@ -46,13 +46,13 @@
       "dist/nodes/Teamleader/Teamleader.node.js"
     ]
   },
-	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"eslint": "9.32.0",
-		"prettier": "3.6.2",
-		"release-it": "^19.0.4",
-		"typescript": "5.9.2"
-	},
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^19.0.4",
+    "typescript": "5.9.2"
+  },
   "peerDependencies": {
     "n8n-workflow": "*"
   }
